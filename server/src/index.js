@@ -8,10 +8,8 @@ import express from "express";
 import authRoute from "./routes/auth.route.js";
 import { connectDB } from "./libs/dbConnnect.js";
 import messageRoute from "./routes/message.route.js";
-import { app, io, server } from "./libs/socket.js";
-config({
-  path: "./.env",
-});
+import { app, server } from "./libs/socket.js";
+config();
 
 const Port = process.env.PORT;
 const __dirname = path.resolve();
