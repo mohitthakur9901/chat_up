@@ -1,50 +1,45 @@
-import { config } from "dotenv";
-import { v2 as cloudinary } from "cloudinary";
+import express from "express";
+import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+
 import path from "path";
-import express from "express";
 
-import authRoute from "./routes/auth.route.js";
 import { connectDB } from "./libs/dbConnnect.js";
-import messageRoute from "./routes/message.route.js";
-import { app, server } from "./libs/socket.js";
-config();
 
-const Port = process.env.PORT;
+import authRoutes from "./routes/auth.route.js";
+import messageRoutes from "./routes/message.route.js";
+import { app, server } from "./libs/socket.js";
+
+dotenv.config();
+
+const PORT = process.env.PORT;
 const __dirname = path.resolve();
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
+app.use(express.json());
+app.use(cookieParser());
 app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
   })
 );
-app.use(express.json());
-app.use(cookieParser());
-
-// routes
-app.get("/", (req, res) => {
-  res.send("Hello World");
+app.get("/health", (req, res) => {
+  res.status(200).json({ message: "Server is healthy" });
 });
-app.use("/api/auth", authRoute);
-app.use("/api/messages", messageRoute);
+
+app.use("/api/auth", authRoutes);
+app.use("/api/messages", messageRoutes);
 
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
   app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../../frontend", "dist", "index.html"));
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
 }
 
-server.listen(Port, () => {
-  console.log("server is running on Port:" + Port);
+server.listen(PORT, () => {
+  console.log("server is running on PORT:" + PORT);
   connectDB();
 });
